@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template_string, abort
+from flask import Flask, request, render_template_string, abort
 from cryptography.fernet import Fernet
 
 app = Flask(__name__)
@@ -6,12 +6,12 @@ app = Flask(__name__)
 # === CONFIGURATION ===
 POWERBI_LINK = b"https://app.powerbi.com/view?r=eyJrIjoiZGRkZGJjOGItZTU0OC00NWY3LTg2ZDItOWM2NDM0NzU3ODAwIiwidCI6IjM4ZDc4NjJlLTRiMTAtNDM5Mi04MTFhLWM3OGFhNDlkOTE1OCJ9"
 PASSWORD = "mysecret123"
-ALLOWED_IPS = {"127.0.0.1", "10.15.6.141", "192.168.1.100", "localhost", "::1", "10.15.6.142"}
-SECRET_KEY = Fernet.generate_key()  # Replace with your stored key
+ALLOWED_IPS = { "10.15.6.141",  "localhost", "::1", "10.15.6.142"}
+SECRET_KEY = Fernet.generate_key()  # Replace with your stored one in production
 fernet = Fernet(SECRET_KEY)
 ENCRYPTED_LINK = fernet.encrypt(POWERBI_LINK).decode()
 
-# === HTML ===
+# === HTML TEMPLATES ===
 HTML_FORM = """
 <!DOCTYPE html>
 <html>
@@ -22,6 +22,17 @@ HTML_FORM = """
         <input type="password" name="password" placeholder="Enter password" required />
         <button type="submit">Access Report</button>
     </form>
+</body>
+</html>
+"""
+
+HTML_REPORT = """
+<!DOCTYPE html>
+<html>
+<head><title>Secure Report View</title></head>
+<body>
+    <h2>Power BI Report</h2>
+    <iframe width="100%" height="800" src="{{ link }}" frameborder="0" allowfullscreen="true"></iframe>
 </body>
 </html>
 """
@@ -44,7 +55,7 @@ def view_report():
     if password == PASSWORD:
         try:
             decrypted_link = fernet.decrypt(ENCRYPTED_LINK.encode()).decode()
-            return redirect(decrypted_link)
+            return render_template_string(HTML_REPORT, link=decrypted_link)
         except Exception as e:
             print("Decryption failed:", e)
             return "Internal error", 500
@@ -53,5 +64,4 @@ def view_report():
 if __name__ == "__main__":
     print("🔐 Your secret key (save it!):", SECRET_KEY.decode())
     print("🔗 Encrypted Power BI link:", ENCRYPTED_LINK)
-    print("🚀 App running on http://0.0.0.0:10000")
     app.run(host="0.0.0.0", port=10000, debug=True)
