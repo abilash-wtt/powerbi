@@ -100,5 +100,5 @@ def decrypt():
 if __name__ == "__main__":
     print("🔐 Your secret key (save it!):", SECRET_KEY.decode())
     print("🔗 Encrypted Power BI link:", ENCRYPTED_LINK)
-    print("🚀 App running on http://localhost:5000")
-    app.run(debug=True)
+    print("🚀 App running on http://0.0.0.0:10000")
+    app.run(host="0.0.0.0", port=10000, debug=True)
