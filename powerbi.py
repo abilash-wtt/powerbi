@@ -66,7 +66,8 @@ HTML_PAGE = """
 def limit_remote_addr():
     if IS_RENDER:
         return  # Skip IP filter in Render
-    ip = request.remote_addr
+    # Get real IP in case of proxy/load balancer
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr).split(',')[0]
     print(f"Incoming IP: {ip}")
     if ip not in ALLOWED_IPS:
         abort(403)
@@ -94,4 +95,4 @@ if __name__ == "__main__":
     print("🔐 SECRET_KEY:", SECRET_KEY.decode())
     print("🔗 Encrypted Power BI link:", ENCRYPTED_LINK)
     print("🚀 Running on http://0.0.0.0:10000")
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=False)
